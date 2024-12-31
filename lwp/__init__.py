@@ -257,7 +257,7 @@ def check_version():
     f = open('version')
     current = float(f.read())
     f.close()
-    latest = float(urlopen('https://github.com/flydt/LXC-Web-Panel-ng/blob/0.2/version').read())
+    latest = float(urlopen('https://github.com/flydt/LXC-Web-Panel-ng/blob/main/version').read())
     return {'current': current,
             'latest': latest}
 
