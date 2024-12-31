@@ -31,7 +31,7 @@ sys.path.append('../')
 from lxclite import exists, stopped, ContainerDoesntExists
 
 import os
-import platform
+import distro
 import re
 import subprocess
 import time
@@ -226,8 +226,8 @@ def check_ubuntu():
     '''
     return the System version
     '''
-    dist = '%s %s' % (platform.linux_distribution()[0],
-                      platform.linux_distribution()[1])
+    dist = '%s %s' % (distro.linux_distribution()[0],
+                      distro.linux_distribution()[1])
     return dist
 
 
@@ -257,7 +257,7 @@ def check_version():
     f = open('version')
     current = float(f.read())
     f.close()
-    latest = float(urlopen('http://lxc-webpanel.github.com/version').read())
+    latest = float(urlopen('https://github.com/flydt/LXC-Web-Panel-ng/blob/0.2/version').read())
     return {'current': current,
             'latest': latest}
 
@@ -278,9 +278,9 @@ def get_net_settings():
     if not filename:
         return False
 
-    config = configparser.SafeConfigParser()
+    config = configparser.ConfigParser()
+    config.read(filename)
     cfg = {}
-    config.readfp(FakeSection(open(filename)))
     cfg['use'] = config.get('DEFAULT', 'USE_LXC_BRIDGE').strip('"')
     cfg['bridge'] = config.get('DEFAULT', 'LXC_BRIDGE').strip('"')
     cfg['address'] = config.get('DEFAULT', 'LXC_ADDR').strip('"')
@@ -303,9 +303,10 @@ def get_container_settings(name):
 
     if not file_exist(filename):
         return False
-    config = configparser.SafeConfigParser()
+
+    config = configparser.ConfigParser()
+    config.read(filename)
     cfg = {}
-    config.readfp(FakeSection(open(filename)))
     try:
         cfg['type'] = config.get('DEFAULT', cgroup['type'])
     except configparser.NoOptionError:
@@ -372,8 +373,8 @@ def push_net_value(key, value):
     filename = get_net_settings_fname()
 
     if filename:
-        config = configparser.RawConfigParser()
-        config.readfp(FakeSection(open(filename)))
+        config = configparser.ConfigParser()
+        config.read(filename)
         if not value:
             config.remove_option('DEFAULT', key)
         else:
@@ -417,6 +418,7 @@ def push_config_value(key, value, container=None):
             values = []
             i = 0
 
+            values.append("[setup]")
             load = open(filename, 'r')
             read = load.readlines()
             load.close()
@@ -437,9 +439,10 @@ def push_config_value(key, value, container=None):
             filename = '/var/lib/lxc/%s/config' % container
 
         save = save_cgroup_devices(filename=filename)
+        print(save)
 
-        config = configparser.RawConfigParser()
-        config.readfp(FakeSection(open(filename)))
+        config = configparser.ConfigParser()
+        config.read(filename)
         if not value:
             config.remove_option('DEFAULT', key)
         elif key == cgroup['memlimit'] or key == cgroup['swlimit'] \

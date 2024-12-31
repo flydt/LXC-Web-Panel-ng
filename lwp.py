@@ -44,8 +44,8 @@ except ImportError:
     import ConfigParser as configparser
 
 # configuration
-config = configparser.SafeConfigParser()
-config.readfp(open('lwp.conf'))
+config = configparser.ConfigParser()
+config.read('lwp.conf')
 
 SECRET_KEY = '\xb13\xb6\xfb+Z\xe8\xd1n\x80\x9c\xe7KM' \
              '\x1c\xc1\xa7\xf8\xbeY\x9a\xfa<.'
@@ -175,8 +175,8 @@ def edit(container=None):
 
             if form['utsname'] != cfg['utsname'] and \
                     re.match('(?!^containers$)|^(([a-zA-Z0-9]|[a-zA-Z0-9]'
-                             '[a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|'
-                             '[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$',
+                             '[a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|'
+                             '[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$',
                              form['utsname']):
                 lwp.push_config_value('lxc.utsname', form['utsname'],
                                       container=container)
@@ -189,7 +189,7 @@ def edit(container=None):
                 flash(u'Network flag updated for %s!' % container, 'success')
 
             if form['type'] != cfg['type'] and \
-                    re.match('^\w+$', form['type']):
+                    re.match('^\\w+$', form['type']):
                 lwp.push_config_value('lxc.network.type', form['type'],
                                       container=container)
                 flash(u'Link type updated for %s!' % container, 'success')
@@ -201,7 +201,7 @@ def edit(container=None):
                 flash(u'Link name updated for %s!' % container, 'success')
 
             if form['hwaddr'] != cfg['hwaddr'] and \
-                    re.match('^([a-fA-F0-9]{2}[:|\-]?){6}$', form['hwaddr']):
+                    re.match('^([a-fA-F0-9]{2}[:|\\-]?){6}$', form['hwaddr']):
                 lwp.push_config_value('lxc.network.hwaddr', form['hwaddr'],
                                       container=container)
                 flash(u'Hardware address updated for %s!' % container,
@@ -283,7 +283,7 @@ def edit(container=None):
                 flash(u'CPU shares updated for %s!' % container, 'success')
 
             if form['rootfs'] != cfg['rootfs'] and \
-                    re.match('^[a-zA-Z0-9_/\-\.]+', form['rootfs']):
+                    re.match('^[a-zA-Z0-9_/\\-\\.]+', form['rootfs']):
                 lwp.push_config_value('lxc.rootfs', form['rootfs'],
                                       container=container)
                 flash(u'Rootfs updated!' % container, 'success')
@@ -391,7 +391,7 @@ def lxc_net():
                     lwp.push_net_value('LXC_NETMASK', form['netmask'])
 
                 if form['network'] and form['network'] != cfg['network'] and \
-                        re.match('^%s(?:/\d{1,2}|)$' % ip_regex,
+                        re.match('^%s(?:/\\d{1,2}|)$' % ip_regex,
                                  form['network']):
                     lwp.push_net_value('LXC_NETWORK', form['network'])
 
@@ -470,7 +470,7 @@ def lwp_users():
             if request.form['newUser'] == 'True':
                 if not request.form['username'] in \
                         [user['username'] for user in users]:
-                    if re.match('^\w+$', request.form['username']) and \
+                    if re.match('^\\w+$', request.form['username']) and \
                             request.form['password1']:
                         if request.form['password1'] == \
                                 request.form['password2']:
@@ -872,7 +872,7 @@ def refresh_memory_containers(name=None):
 @app.route('/_check_version')
 def check_version():
     if 'logged_in' in session:
-        return jsonify(lwp.check_version())
+        return jsonify(0.3)
 
 
 def hash_passwd(passwd):
